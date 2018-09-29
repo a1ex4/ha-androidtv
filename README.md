@@ -30,7 +30,7 @@
 ### 0.4 Setup Platform
 
 - [ ] Test if passed in info (user/pass/host etc.) works.
-- [ ] (not sure?) Group your calls to `add_devices` if possible.
+- [x] Group your calls to `add_devices` if possible.
 - [x] If platform adds extra services, format should be `<component>.<platform>_<service name>`.
 
 ### 0.5 Entity
@@ -49,7 +49,7 @@
 
 This integration is able to cope when things go wrong. It will not print any exceptions nor will it fill the log with retry attempts.
 
-- [ ] Set an appropriate `SCAN_INTERVAL` (if a polling integration)
+- [x] Set an appropriate `SCAN_INTERVAL` (if a polling integration)
 - [x] Raise `PlatformNotReady` if unable to connect during platform setup (if appropriate)
 - [x] (no auth) Handles expiration of auth credentials. Refresh if possible or print correct error and fail setup. If based on a config entry, should trigger a new config entry flow to re-authorize.
 - [x] (no internet access needed) Handles internet unavailable. Log a warning once when unavailable, log once when reconnected.
@@ -66,6 +66,6 @@ This is a solid integration that is able to survive poor conditions and can be c
   - Tests for the config flow
   - Discoverable (if available)
 - [ ] Entities have device info (if available) ([docs](device_registry_index.md#defining-devices))
-- [ ] States are translated in the frontend (text-based sensors only, [docs](internationalization_index.md))
+- [x] (not needed) States are translated in the frontend (text-based sensors only, [docs](internationalization_index.md))
 - [ ] Tests for reading data from/controlling the integration ([docs](development_testing.md))
 - [ ] Has a code owner
