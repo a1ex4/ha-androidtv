@@ -44,3 +44,28 @@
 ### 0.6 Communication with devices/services
 
 - [x] All API specific code has to be part of a third party library hosted on PyPi. Home Assistant should only interact with objects and not make direct calls to the API.
+
+## Silver 🥈
+
+This integration is able to cope when things go wrong. It will not print any exceptions nor will it fill the log with retry attempts.
+
+- [ ] Set an appropriate `SCAN_INTERVAL` (if a polling integration)
+- [x] Raise `PlatformNotReady` if unable to connect during platform setup (if appropriate)
+- [ ] Handles expiration of auth credentials. Refresh if possible or print correct error and fail setup. If based on a config entry, should trigger a new config entry flow to re-authorize.
+- Handles internet unavailable. Log a warning once when unavailable, log once when reconnected.
+- [ ] Handles device/service unavailable. Log a warning once when unavailable, log once when reconnected.
+- [x] Set `available` property to `False` if appropriate ([docs](entity_index.md#generic-properties))
+- [ ] Entities have unique ID (if available) ([docs](entity_registry_index.md#unique-id-requirements))
+
+## Gold 🥇
+
+This is a solid integration that is able to survive poor conditions and can be configured via the user interface.
+
+- [ ] Configurable via config entries.
+  - Don't allow configuring already configured device/service (example: no 2 entries for same hub)
+  - Tests for the config flow
+  - Discoverable (if available)
+- [ ] Entities have device info (if available) ([docs](device_registry_index.md#defining-devices))
+- [ ] States are translated in the frontend (text-based sensors only, [docs](internationalization_index.md))
+- [ ] Tests for reading data from/controlling the integration ([docs](development_testing.md))
+- [ ] Has a code owner
