@@ -29,7 +29,7 @@
 
 ### 0.4 Setup Platform
 
-- [ ] Test if passed in info (user/pass/host etc.) works.
+- [x] Test if passed in info (user/pass/host etc.) works.
 - [x] Group your calls to `add_devices` if possible.
 - [x] If platform adds extra services, format should be `<component>.<platform>_<service name>`.
 
