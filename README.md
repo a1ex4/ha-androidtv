@@ -21,7 +21,7 @@
 ### 0.3 Configuration
 
 - [x] Voluptuous schema present for [configuration validation](development_validation.md)
-- [ ] Voluptuous schema extends schema from component<br>(e.g., `light.hue.PLATFORM_SCHEMA` extends `light.PLATFORM_SCHEMA`)
+- [ ] (not sure?) Voluptuous schema extends schema from component<br>(e.g., `light.hue.PLATFORM_SCHEMA` extends `light.PLATFORM_SCHEMA`)
 - [x] Default parameters specified in voluptuous schema, not in `setup_platform(...)`
 - [x] Your `PLATFORM_SCHEMA` should use as many generic config keys as possible from `homeassistant.const`
 
@@ -30,8 +30,8 @@
 ### 0.4 Setup Platform
 
 - [ ] Test if passed in info (user/pass/host etc.) works.
-- [ ] Group your calls to `add_devices` if possible.
-- [ ] If platform adds extra services, format should be `<component>.<platform>_<service name>`.
+- [ ] (not sure?) Group your calls to `add_devices` if possible.
+- [x] If platform adds extra services, format should be `<component>.<platform>_<service name>`.
 
 ### 0.5 Entity
 
@@ -51,9 +51,9 @@ This integration is able to cope when things go wrong. It will not print any exc
 
 - [ ] Set an appropriate `SCAN_INTERVAL` (if a polling integration)
 - [x] Raise `PlatformNotReady` if unable to connect during platform setup (if appropriate)
-- [ ] Handles expiration of auth credentials. Refresh if possible or print correct error and fail setup. If based on a config entry, should trigger a new config entry flow to re-authorize.
-- [ ] Handles internet unavailable. Log a warning once when unavailable, log once when reconnected.
-- [ ] Handles device/service unavailable. Log a warning once when unavailable, log once when reconnected.
+- [x] (no auth) Handles expiration of auth credentials. Refresh if possible or print correct error and fail setup. If based on a config entry, should trigger a new config entry flow to re-authorize.
+- [x] (no internet access needed) Handles internet unavailable. Log a warning once when unavailable, log once when reconnected.
+- [x] Handles device/service unavailable. Log a warning once when unavailable, log once when reconnected.
 - [x] Set `available` property to `False` if appropriate ([docs](entity_index.md#generic-properties))
 - [ ] Entities have unique ID (if available) ([docs](entity_registry_index.md#unique-id-requirements))
 
