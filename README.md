@@ -52,7 +52,7 @@ This integration is able to cope when things go wrong. It will not print any exc
 - [ ] Set an appropriate `SCAN_INTERVAL` (if a polling integration)
 - [x] Raise `PlatformNotReady` if unable to connect during platform setup (if appropriate)
 - [ ] Handles expiration of auth credentials. Refresh if possible or print correct error and fail setup. If based on a config entry, should trigger a new config entry flow to re-authorize.
-- Handles internet unavailable. Log a warning once when unavailable, log once when reconnected.
+- [ ] Handles internet unavailable. Log a warning once when unavailable, log once when reconnected.
 - [ ] Handles device/service unavailable. Log a warning once when unavailable, log once when reconnected.
 - [x] Set `available` property to `False` if appropriate ([docs](entity_index.md#generic-properties))
 - [ ] Entities have unique ID (if available) ([docs](entity_registry_index.md#unique-id-requirements))
