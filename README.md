@@ -10,7 +10,7 @@
 
 ### 0.1 Requirements
 
-- [x] Requirement version should be pinned: `REQUIREMENTS = ['phue==0.8.1']`
+- [x] Requirement version should be pinned: `REQUIREMENTS = ['phue==0.8.1']` [here] (https://github.com/a1ex4/home-assistant/blob/androidtv/homeassistant/components/media_player/androidtv.py#L35)
 - [x] We no longer want requirements hosted on GitHub. Please upload to PyPi.
 - [x] Requirements should only be imported inside functions. This is necessary because requirements are installed on the fly.
 
@@ -20,7 +20,7 @@
 
 ### 0.3 Configuration
 
-- [x] Voluptuous schema present for [configuration validation](development_validation.md)
+- [x] Voluptuous schema present for [configuration validation](development_validation.md) [here] (https://github.com/a1ex4/home-assistant/blob/androidtv/homeassistant/components/media_player/androidtv.py#L50-L57)
 - [ ] (not sure?) Voluptuous schema extends schema from component<br>(e.g., `light.hue.PLATFORM_SCHEMA` extends `light.PLATFORM_SCHEMA`)
 - [x] Default parameters specified in voluptuous schema, not in `setup_platform(...)`
 - [x] Your `PLATFORM_SCHEMA` should use as many generic config keys as possible from `homeassistant.const`
@@ -30,11 +30,11 @@
 ### 0.4 Setup Platform
 
 - [x] Test if passed in info (user/pass/host etc.) works.
-- [x] Group your calls to `add_devices` if possible.
-- [x] If platform adds extra services, format should be `<component>.<platform>_<service name>`.
+- [x] Group your calls to `add_devices` if possible. [here] (https://github.com/a1ex4/home-assistant/blob/androidtv/homeassistant/components/media_player/androidtv.py#L150)
+- [x] If platform adds extra services, format should be `<component>.<platform>_<service name>`. [here] (https://github.com/a1ex4/home-assistant/blob/androidtv/homeassistant/components/media_player/androidtv.py#L173)
 
 ### 0.5 Entity
-
+[here] (https://github.com/a1ex4/home-assistant/blob/androidtv/homeassistant/components/media_player/androidtv.py#L176)
 - [x] Extend entity from component, e.g., `class HueLight(Light)`.
 - [x] Avoid passing in `hass` as a parameter to the entity. When the entity has been added to Home Assistant, `hass` will be set on the entity by the helper in entity_platform.py. This means you can access `hass` as `self.hass` inside the entity.
 - [x] Do not call `update()` in constructor, use `add_entities(devices, True)` instead.
@@ -49,8 +49,8 @@
 
 This integration is able to cope when things go wrong. It will not print any exceptions nor will it fill the log with retry attempts.
 
-- [x] Set an appropriate `SCAN_INTERVAL` (if a polling integration)
-- [x] Raise `PlatformNotReady` if unable to connect during platform setup (if appropriate)
+- [x] Set an appropriate `SCAN_INTERVAL` (if a polling integration) [here] (https://github.com/a1ex4/home-assistant/blob/androidtv/homeassistant/components/media_player/androidtv.py#L202)
+- [x] Raise `PlatformNotReady` if unable to connect during platform setup (if appropriate) [here] (https://github.com/a1ex4/home-assistant/blob/androidtv/homeassistant/components/media_player/androidtv.py#L115-L148)
 - [x] (no auth) Handles expiration of auth credentials. Refresh if possible or print correct error and fail setup. If based on a config entry, should trigger a new config entry flow to re-authorize.
 - [x] (no internet access needed) Handles internet unavailable. Log a warning once when unavailable, log once when reconnected.
 - [x] Handles device/service unavailable. Log a warning once when unavailable, log once when reconnected.
