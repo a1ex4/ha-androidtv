@@ -1,5 +1,5 @@
 """
-Provide functionality to interact with AndroidT devices on the network.
+Provide functionality to interact with AndroidTv devices on the network.
 
 Example config:
 media_player:
@@ -31,6 +31,8 @@ REQUIREMENTS = ['pure-python-adb==0.1.5.dev0']
 
 _LOGGER = logging.getLogger(__name__)
 
+CONF_APPS = 'apps'
+DEFAULT_APPS = {}
 DEFAULT_NAME = 'Android'
 DEFAULT_PORT = '5555'
 
@@ -78,13 +80,15 @@ ACTIONS = {
 }
 
 KNOWN_APPS = {
+    "amazon": "Amazon Prime Video",
     "dream": "Screensaver",
     "kodi": "Kodi",
     "netflix": "Netflix",
     "plex": "Plex",
     "spotify": "Spotify",
     "tvlauncher": "Homescreen",
-    "youtube": "Youtube"
+    "youtube": "Youtube",
+    "zatto": "Zattoo"
 }
 
 SUPPORT_ANDROIDTV = (SUPPORT_NEXT_TRACK | SUPPORT_PAUSE |
@@ -97,6 +101,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_HOST): cv.string,
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     vol.Optional(CONF_PORT, default=DEFAULT_PORT): vol.All(cv.port, cv.string),
+    vol.Optional(CONF_APPS, default=DEFAULT_APPS): dict,
 })
 
 ACTION_SERVICE = 'androidtv_action'
@@ -132,6 +137,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     host = config.get(CONF_HOST)
     name = config.get(CONF_NAME)
     port = config.get(CONF_PORT)
+    apps = config.get(CONF_APPS)
     uri = "{}:{}".format(host, port)
 
     try:
@@ -141,7 +147,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
                 "ADB server not connected to {}".format(name))
             raise PlatformNotReady
 
-        androidtv = AndroidTv(name, uri, client, adb_device)
+        androidtv = AndroidTv(name, uri, apps, client, adb_device)
 
         add_entities([androidtv])
         if host in hass.data[DATA_KEY]:
@@ -202,12 +208,14 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 class AndroidTv(MediaPlayerDevice):
     """Representation of an AndroidTv device."""
 
-    def __init__(self, name, uri, client, adb_device):
+    def __init__(self, name, uri, apps, client, adb_device):
         """Initialize the Android device."""
         self._client = client
         self._adb_device = adb_device
         self._uri = uri
         self._name = name
+        self._apps = KNOWN_APPS
+        self._apps.update(dict(apps))
         self._available = None
         self._volume = None
         self._muted = None
@@ -305,9 +313,9 @@ class AndroidTv(MediaPlayerDevice):
     def get_app_name(self, app_id):
         """Return the app name from its id and known apps."""
         i = 0
-        for app in KNOWN_APPS:
+        for app in self._apps:
             if app in app_id:
-                app_name = KNOWN_APPS[app]
+                app_name = self._apps[app]
                 i += 1
         if i == 0:
             app_name = None
