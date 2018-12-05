@@ -103,7 +103,8 @@ KNOWN_APPS = {
     "plex": "Plex",
     "spotify": "Spotify",
     "tvlauncher": "Homescreen",
-    "youtube": "Youtube"
+    "youtube": "Youtube",
+    "zatto": "Zattoo"
 }
 
 ACTION_SERVICE = 'androidtv_action'
