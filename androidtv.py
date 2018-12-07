@@ -216,8 +216,6 @@ class AndroidTvDevice(MediaPlayerDevice):
         self._apps.update(dict(apps))
         self._app_name = None
         self._state = None
-
-        self._adb_device = adb_device
         
     def update(self):
         if self._client.server_is_connected():
