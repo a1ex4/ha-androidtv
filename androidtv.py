@@ -315,62 +315,61 @@ class AndroidTvDevice(MediaPlayerDevice):
 
     def turn_on(self):
         """Instruct the tv to turn on."""
-        self._androidtv._adb_device.shell('input keyevent 26')
+        self._androidtv.turn_on()
 
     def turn_off(self):
         """Instruct the tv to turn off."""
-        self._androidtv._adb_device.shell('input keyevent 26')
+        self._androidtv.turn_off()
 
     def media_play(self):
         """Send play command."""
-        self._androidtv._adb_device.shell('input keyevent 126')
+        self._androidtv.media_play()
         self._state = STATE_PLAYING
 
     def media_pause(self):
         """Send pause command."""
-        self._androidtv._adb_device.shell('input keyevent 127')
+        self._androidtv.media_pause()
         self._state = STATE_PAUSED
 
     def media_play_pause(self):
         """Send play/pause command."""
-        self._androidtv._adb_device.shell('input keyevent 85')
+        self._androidtv.media_play_pause()
 
     def media_stop(self):
         """Send stop command."""
-        self._androidtv._adb_device.shell('input keyevent 86')
+        self._androidtv.media_stop()
         self._state = STATE_IDLE
 
     def mute_volume(self, mute):
         """Mute the volume."""
-        self._androidtv._adb_device.shell('input keyevent 164')
+        self._androidtv.mute_volume(mute)
         self._muted = mute
 
     def volume_up(self):
         """Increment the volume level."""
-        self._androidtv._adb_device.shell('input keyevent 24')
+        self._androidtv.volume_up()
 
     def volume_down(self):
         """Decrement the volume level."""
-        self._androidtv._adb_device.shell('input keyevent 25')
+        self._androidtv.volume_down()
 
     def media_previous_track(self):
         """Send previous track command."""
-        self._androidtv._adb_device.shell('input keyevent 88')
+        self._androidtv.media_previous_track()
 
     def media_next_track(self):
         """Send next track command."""
-        self._androidtv._adb_device.shell('input keyevent 87')
+        self._androidtv.media_next_track()
 
     def input_key(self, key):
         """Input the key to the device."""
-        self._androidtv._adb_device.shell("input keyevent {}".format(key))
+        self._androidtv.input_key(key)
 
     def start_intent(self, uri):
         """Start an intent on the device."""
-        self._androidtv._adb_device.shell(
-            "am start -a android.intent.action.VIEW -d {}".format(uri))
+        self._androidtv.start_intent(uri)
 
     def do_action(self, action):
         """Input the key corresponding to the action."""
-        self._androidtv._adb_device.shell(
-            "input keyevent {}".format(ACTIONS[action]))
+        self._androidtv.do_action(action)
+        
