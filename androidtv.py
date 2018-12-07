@@ -206,7 +206,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 
 class AndroidTvDevice(MediaPlayerDevice):
-    """yolo"""
+    """Representation of an Android TV device."""
     
     def __init__(self, name, host, apps, client, adb_device):
         from androidtv import Android
