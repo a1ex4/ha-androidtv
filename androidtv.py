@@ -143,7 +143,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     if adb_client.server_is_connected():
         if adb_client.device_is_connected(host):
             adb_device = adb_client._client.device(host)
-            androidtv = AndroidTvDevice(name, host, apps, adb_client, adb_device)
+            androidtv = AndroidTvDevice(
+                name, host, apps, adb_client, adb_device)
             add_entities([androidtv])
             if host in hass.data[DATA_KEY]:
                 _LOGGER.warning(
@@ -205,7 +206,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 class AndroidTvDevice(MediaPlayerDevice):
     """Representation of an Android TV device."""
-    
+
     def __init__(self, name, host, apps, client, adb_device):
         from androidtv import Android
         self._androidtv = Android(host, client, adb_device)
@@ -216,7 +217,7 @@ class AndroidTvDevice(MediaPlayerDevice):
         self._apps.update(dict(apps))
         self._app_name = None
         self._state = None
-        
+
     def update(self):
         if self._client.server_is_connected():
             if self._client.device_is_connected(self._host):
@@ -242,10 +243,10 @@ class AndroidTvDevice(MediaPlayerDevice):
                 if self._androidtv._available:
                     self._androidtv._available = False
                     _LOGGER.error(
-                    "ADB server not connected to {}".format(self._name))
+                        "ADB server not connected to {}".format(self._name))
                     _LOGGER.warning(
-                    "Device {} became unavailable.".format(self._name))
-                    
+                        "Device {} became unavailable.".format(self._name))
+
         else:
             # can't reach server
             if self._androidtv._available:
@@ -254,7 +255,6 @@ class AndroidTvDevice(MediaPlayerDevice):
                     "Can't reach adb server, is it running ?")
                 _LOGGER.warning(
                     "Device {} became unavailable.".format(self._name))
-
 
     def get_app_name(self, app_id):
         """Return the app name from its id and known apps."""
