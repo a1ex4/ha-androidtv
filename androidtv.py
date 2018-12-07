@@ -140,23 +140,21 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     apps = config.get(CONF_APPS)
     host = "{}:{}".format(ip, port)
 
-    try:
-        adb_device = adb_client._client.device(host)
-        if adb_device is None:
+    if adb_client.server_is_connected():
+        if adb_client.device_is_connected(host):
+            adb_device = adb_client._client.device(host)
+            androidtv = AndroidTvDevice(name, host, apps, adb_client, adb_device)
+            add_entities([androidtv])
+            if host in hass.data[DATA_KEY]:
+                _LOGGER.warning(
+                    "Platform already setup on {}, skipping.".format(host))
+            else:
+                hass.data[DATA_KEY][host] = androidtv
+        else:
             _LOGGER.error(
                 "ADB server not connected to {}".format(name))
             raise PlatformNotReady
-
-        androidtv = AndroidTvDevice(name, host, apps, adb_client, adb_device)
-
-        add_entities([androidtv])
-        if host in hass.data[DATA_KEY]:
-            _LOGGER.warning(
-                "Platform already setup on {}, skipping.".format(host))
-        else:
-            hass.data[DATA_KEY][host] = androidtv
-
-    except RuntimeError:
+    else:
         _LOGGER.error(
             "Can't reach adb server, is it running ?")
         raise PlatformNotReady
