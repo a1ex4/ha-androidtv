@@ -14,6 +14,7 @@ https://home-assistant.io/components/media_player.androidtv/
 
 import logging
 import functools
+import os
 import threading
 import voluptuous as vol
 
@@ -39,6 +40,7 @@ CONF_ADB_SERVER_IP = 'adb_server_ip'
 CONF_ADB_SERVER_PORT = 'adb_server_port'
 
 DEFAULT_APPS = {}
+DEFAULT_ADBKEY = os.path.join(os.path.expanduser('~'), '.android', 'adbkey')
 DEFAULT_NAME = 'Android'
 DEFAULT_PORT = '5555'
 DEFAULT_ADB_SERVER_PORT = 5037
@@ -155,14 +157,19 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     host = '{0}:{1}'.format(config[CONF_HOST], config[CONF_PORT])
     name = config.get(CONF_NAME)
 
-    if CONF_ADBKEY in config:
-        # "python-adb" with adbkey
-        atv = AndroidTV(host, config[CONF_ADBKEY])
-        adb_log = " using adbkey='{0}'".format(config[CONF_ADBKEY])
-    elif CONF_ADB_SERVER_IP not in config:
-        # "python-adb" without adbkey
-        atv = AndroidTV(host)
-        adb_log = ""
+    if CONF_ADB_SERVER_IP not in config:
+        try:
+            # "python-adb" without adbkey
+            atv = AndroidTV(host)
+            adb_log = ""
+        except:
+            # "python-adb" with adbkey
+            if CONF_ADBKEY in config:
+                adbkey = config[CONF_ADBKEY]
+            else:
+                adbkey = DEFAULT_ADBKEY
+            atv = AndroidTV(host, adbkey)
+            adb_log = " using adbkey='{0}'".format(adbkey)
     else:
         # "pure-python-adb"
         atv = AndroidTV(
@@ -176,7 +183,6 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         _LOGGER.warning(
             "Could not connect to Android TV at %s%s", host, adb_log)
         raise PlatformNotReady
-        # return
 
     device = AndroidTVDevice(atv, name, config[CONF_APPS])
     add_entities([device])
@@ -316,12 +322,11 @@ class AndroidTVDevice(MediaPlayerDevice):
             return
         try:
             self.androidtv.update()
+            self._app_name = self.get_app_name(self.androidtv.app_id)
         except:
             _LOGGER.warning(
                 "Device {} became unavailable.".format(self._name))
             self._available = False
-
-        self._app_name = self.get_app_name(self.androidtv.app_id)
 
         if self.androidtv.state == 'off':
             self._state = STATE_OFF
@@ -336,7 +341,7 @@ class AndroidTVDevice(MediaPlayerDevice):
         """Return the app name from its id and known apps."""
         i = 0
         for app in self._apps:
-            if app in app_id:
+            if app in app_id['package']:
                 app_name = self._apps[app]
                 i += 1
         if i == 0:
