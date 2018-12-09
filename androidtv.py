@@ -13,6 +13,7 @@ https://home-assistant.io/components/media_player.androidtv/
 """
 
 import logging
+import functools
 import threading
 import voluptuous as vol
 
@@ -119,7 +120,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_ADBKEY): has_adb_files,
     vol.Optional(CONF_APPS, default=DEFAULT_APPS): dict,
     vol.Optional(CONF_ADB_SERVER_IP): cv.string,
-    vol.Optional(CONF_ADB_SERVER_PORT, default=DEFAULT_PORT): vol.All(cv.port, cv.string)
+    vol.Optional(
+        CONF_ADB_SERVER_PORT, default=DEFAULT_ADB_SERVER_PORT): cv.port
 })
 
 ACTION_SERVICE = 'androidtv_action'
@@ -163,12 +165,18 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         adb_log = ""
     else:
         # "pure-python-adb"
-        atv = AndroidTV(host, adb_server_ip=config[CONF_ADB_SERVER_IP], adb_server_port=config[CONF_ADB_SERVER_PORT])
-        adb_log = " using ADB server at {0}:{1}".format(config[CONF_ADB_SERVER_IP], config[CONF_ADB_SERVER_PORT])
+        atv = AndroidTV(
+            host,
+            adb_server_ip=config[CONF_ADB_SERVER_IP],
+            adb_server_port=config[CONF_ADB_SERVER_PORT])
+        adb_log = " using ADB server at {0}:{1}".format(
+            config[CONF_ADB_SERVER_IP], config[CONF_ADB_SERVER_PORT])
 
     if not atv.available:
-        _LOGGER.warning("Could not connect to Android TV at %s%s", host, adb_log)
-        return
+        _LOGGER.warning(
+            "Could not connect to Android TV at %s%s", host, adb_log)
+        raise PlatformNotReady
+        # return
 
     device = AndroidTVDevice(atv, name, config[CONF_APPS])
     add_entities([device])
@@ -177,7 +185,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     if host in hass.data[DATA_KEY]:
         _LOGGER.warning("Platform already setup on %s, skipping.", host)
     else:
-        hass.data[DATA_KEY][host] = atv
+        hass.data[DATA_KEY][host] = device
 
     def service_action(service):
         """Dispatch service calls to target entities."""
@@ -241,13 +249,13 @@ def adb_decorator(override_available=False):
                                  'command is still running')
                     return None
 
-                # Additional ADB commands will be prevented while trying this one
+                # More ADB commands will be prevented while trying this one
                 try:
                     returns = func(self, *args, **kwargs)
                 except self.exceptions:
-                    _LOGGER.error('Failed to execute an ADB command; will attempt '
-                                  'to re-establish the ADB connection in the next '
-                                  'update')
+                    _LOGGER.error('Failed to execute an ADB command;'
+                                  'will attempt to re-establish the ADB'
+                                  'connection in the next update')
                     returns = None
                     self._available = False  # pylint: disable=protected-access
                 finally:
@@ -278,7 +286,7 @@ class AndroidTVDevice(MediaPlayerDevice):
         self._apps.update(dict(apps))
         self._app_name = None
         self._state = None
-        self._available = self.firetv.available
+        self._available = self.androidtv.available
 
         # whether or not the ADB connection is currently in use
         self.adb_lock = threading.Lock()
@@ -300,12 +308,19 @@ class AndroidTVDevice(MediaPlayerDevice):
             # Try to connect
             self.androidtv.connect()
             self._available = self.androidtv.available
+            if self._available:
+                _LOGGER.info("Device {} connected.".format(self._name))
 
         # If the ADB connection is not intact, don't update.
         if not self._available:
             return
+        try:
+            self.androidtv.update()
+        except:
+            _LOGGER.warning(
+                "Device {} became unavailable.".format(self._name))
+            self._available = False
 
-        self.androidtv.update()
         self._app_name = self.get_app_name(self.androidtv.app_id)
 
         if self.androidtv.state == 'off':
@@ -410,7 +425,7 @@ class AndroidTVDevice(MediaPlayerDevice):
     @adb_decorator()
     def mute_volume(self, mute):
         """Mute the volume."""
-        self.androidtv.mute_volume(mute)
+        self.androidtv.mute_volume()
         self._muted = mute
 
     @adb_decorator()
@@ -426,12 +441,12 @@ class AndroidTVDevice(MediaPlayerDevice):
     @adb_decorator()
     def media_previous_track(self):
         """Send previous track command."""
-        self.androidtv.media_previous_track()
+        self.androidtv.media_previous()
 
     @adb_decorator()
     def media_next_track(self):
         """Send next track command."""
-        self.androidtv.media_next_track()
+        self.androidtv.media_next()
 
     @adb_decorator()
     def input_key(self, key):
@@ -447,4 +462,3 @@ class AndroidTVDevice(MediaPlayerDevice):
     def do_action(self, action):
         """Input the key corresponding to the action."""
         self.androidtv.do_action(action)
-        
