@@ -1,12 +1,24 @@
 """
 Provide functionality to interact with AndroidTv devices on the network.
 
-Example config:
+Example config using an external ADB server:
 media_player:
   - platform: androidtv
     host: 192.168.1.37
-    name: MIBOX3 ANDROID TV
+    name: MIBOX3
+    adb_server_ip: 127.0.0.1
+    adb_server_port: 5037
+    apps:
+      "amazon": "Amazon Premium Video"
 
+Example config using purely Python:
+media_player:
+  - platform: androidtv
+    host: 192.168.1.37
+    name: MIBOX3
+    adbkey: /config/adbkey
+    apps:
+      "amazon": "Amazon Premium Video"
 
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/media_player.androidtv/
@@ -30,7 +42,7 @@ from homeassistant.const import (
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
 
-REQUIREMENTS = ['https://github.com/JeffLIrion/python-androidtv/zipball/pure-python-adb#androidtv==0.0.3']
+REQUIREMENTS = ['androidtv==0.0.3']
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -158,11 +170,12 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     name = config.get(CONF_NAME)
 
     if CONF_ADB_SERVER_IP not in config:
+        from adb.usb_exceptions import DeviceAuthError
         try:
             # "python-adb" without adbkey
             atv = AndroidTV(host)
             adb_log = ""
-        except:
+        except DeviceAuthError:
             # "python-adb" with adbkey
             if CONF_ADBKEY in config:
                 adbkey = config[CONF_ADBKEY]
@@ -282,9 +295,7 @@ class AndroidTVDevice(MediaPlayerDevice):
     """Representation of an Android TV device."""
 
     def __init__(self, atv, name, apps):
-        from adb.adb_protocol import (
-            InvalidChecksumError, InvalidCommandError, InvalidResponseError)
-
+        """Initialize the Android TV device."""
         self.androidtv = atv
 
         self._name = name
@@ -292,6 +303,7 @@ class AndroidTVDevice(MediaPlayerDevice):
         self._apps.update(dict(apps))
         self._app_name = None
         self._state = None
+        self._muted = None
         self._available = self.androidtv.available
 
         # whether or not the ADB connection is currently in use
@@ -300,32 +312,37 @@ class AndroidTVDevice(MediaPlayerDevice):
         # ADB exceptions to catch
         if not self.androidtv.adb_server_ip:
             # "python-adb"
+            from adb.adb_protocol import (
+                InvalidChecksumError, InvalidCommandError,
+                InvalidResponseError)
             self.exceptions = (AttributeError, BrokenPipeError, TypeError,
                                ValueError, InvalidChecksumError,
                                InvalidCommandError, InvalidResponseError)
         else:
             # "pure-python-adb"
-            self.exceptions = []
+            self.exceptions = tuple()
 
     @adb_decorator(override_available=True)
     def update(self):
+        """Update the states of the device."""
         # Check if device is disconnected.
         if not self._available:
             # Try to connect
             self.androidtv.connect()
-            self._available = self.androidtv.available
-            if self._available:
-                _LOGGER.info("Device {} connected.".format(self._name))
+            if self.androidtv._available:  # pylint: disable=protected-access
+                _LOGGER.info("Device %s reconnected.", self._name)
+                self._available = True
+            else:
+                # If the ADB connection is not intact, don't update.
+                return
 
-        # If the ADB connection is not intact, don't update.
-        if not self._available:
-            return
-        try:
-            self.androidtv.update()
-            self._app_name = self.get_app_name(self.androidtv.app_id)
-        except:
+        self.androidtv.update()
+        self._app_name = self.get_app_name(self.androidtv.app_id)
+
+        # Device was available before the update
+        if not self.androidtv._available:  # pylint: disable=protected-access
             _LOGGER.warning(
-                "Device {} became unavailable.".format(self._name))
+                "Device %s became unavailable.", self._name)
             self._available = False
 
         if self.androidtv.state == 'off':
@@ -339,6 +356,8 @@ class AndroidTVDevice(MediaPlayerDevice):
 
     def get_app_name(self, app_id):
         """Return the app name from its id and known apps."""
+        if app_id is None:
+            return None
         i = 0
         for app in self._apps:
             if app in app_id['package']:
